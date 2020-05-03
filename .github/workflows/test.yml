@@ -17,39 +17,48 @@ jobs:
 #         env:
 #           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
+      - name: Require PR Owner
+        id: filter
+        shell: python
+        run: |
+          triggered = ${{ steps.trigger.outputs.triggered }} == 'true'
+          should_run = triggered and ${{ github.event.comment.user.id }} == ${{ github.event.issue.user.id }}
+          output = 'true' if should_run else 'false'
+          print("::set-output name=continue::" + output)
+
       - name: Inform Skipped
-        if: steps.trigger.outputs.triggered == 'false'
+        if: steps.filter.outputs.continue == 'false'
         run: echo "Skipping rest of action"
 
       - uses: actions/checkout@v2
-        if: steps.trigger.outputs.triggered == 'true'
+        if: steps.filter.outputs.continue == 'true'
         with:
           fetch-depth: 0
       
       - name: Checkout PR
         uses: dawidd6/action-checkout-pr@v1
-        if: steps.trigger.outputs.triggered == 'true'
+        if: steps.filter.outputs.continue == 'true'
         with:
           pr: ${{ github.event.issue.number }}
           
       - name: Get merge-base
         id: mergebase
-        if: steps.trigger.outputs.triggered = 'true'
+        if: steps.filter.outputs.continue = 'true'
         run: echo "::set-output name=commit::$(git merge-base master HEAD)"
     
       - name: Test
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
-        if: steps.trigger.outputs.triggered == 'true'
+        if: steps.filter.outputs.continue == 'true'
       
       - name: Get clang-format
         run: sudo apt-get install clang-format-9
-        if: steps.trigger.outputs.triggered == 'true'
+        if: steps.filter.outputs.continue == 'true'
         
       - name: Clang format each commit in place
         run: |
-          GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i ${{ steps.mergebase.commit }}
+          GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i ${{ steps.mergebase.outputs.commit }}
           shopt -s globstar
           set -e
           while [[ -n $(git status | grep rebase) ]]; do
@@ -58,4 +67,8 @@ jobs:
             git commit --amend --no-edit
             git rebase --continue
           done
-        if: steps.trigger.outputs.triggered == 'true'
+        if: steps.filter.outputs.continue == 'true'
+        
+      - name: Push
+        run: echo "Push"
+        if: steps.filter.outputs.continue == 'true'
