@@ -56,8 +56,8 @@ jobs:
           done
           echo '>>> Finished Rebasing!'
         
-      - name: PR Info
-        id: pr
+      - name: Get PR Info
+        id: prraw
         uses: octokit/request-action@v2.0.0
         with:
           route: GET /repos/:repository/pulls/${{ github.event.issue.number }}
@@ -65,15 +65,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Push
+      - name: Extract PR Info
+        id: pr
         run: |
-          echo $HEADERS
-          echo $DATA | jq '.head.repo'
+          REPO_NAME=$(echo $DATA | jq '.head.repo.full_name')
+          echo "::set-output name=repo::$REPO_NAME"
+          BRANCH_NAME=$(echo $DATA | jq '.head.ref')
+          echo "::set-output name=branch::$BRANCH_NAME"
         env:
-          HEADERS: ${{ steps.pr.outputs.headers }}
-          DATA: ${{ steps.pr.outputs.data }}
-#         uses: ad-m/github-push-action@v0.5.0
-#         with:
-#           github_token: ${{ secrets.GITHUB_TOKEN }}
-#           force: true
-#           branch: ${{ steps.branchname.branch }}
+          HEADERS: ${{ steps.prraw.outputs.headers }}
+          DATA: ${{ steps.prraw.outputs.data }}
+          
+      - name: Push
+        uses: ad-m/github-push-action@v0.5.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ steps.pr.outputs.repo }}
+          force: true
+          branch: ${{ steps.pr.outputs.branch }}
