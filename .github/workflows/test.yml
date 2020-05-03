@@ -7,7 +7,10 @@ on:
 jobs:
   reformat:
     name: ClangFormat
-    if: github.event.issue.pull_request != '' && github.event.comment.body == 'Do: ClangFormat' && github.event.comment.user.id == github.event.issue.user.id
+    if: >-
+      github.event.issue.pull_request != ''
+      && github.event.comment.body == 'Do: ClangFormat'
+      && github.event.comment.user.id == github.event.issue.user.id
     runs-on: ubuntu-latest
 
     steps:
