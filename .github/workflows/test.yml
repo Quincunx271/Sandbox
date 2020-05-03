@@ -59,10 +59,9 @@ jobs:
       - name: Clang format each commit in place
         run: |
           GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i ${{ steps.mergebase.outputs.commit }}
-          shopt -s globstar
           set -e
           while [[ -n $(git status | grep rebase) ]]; do
-            clang-format-9 -style=llvm -i --verbose src/**/*.hpp src/**/*.cpp
+            find . -name '*.hpp' -o -name '*.cpp' | xargs clang-format-9 -style=llvm -i --verbose
             git add -A
             git commit --amend --no-edit
             git rebase --continue
