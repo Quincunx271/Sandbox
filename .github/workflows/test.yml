@@ -57,13 +57,19 @@ jobs:
           echo '>>> Finished Rebasing!'
         
       - name: PR Info
-        id: pr
+        id: prraw
         uses: octokit/request-action@v2.0.0
         with:
           route: GET /repos/:repository/pulls/${{ github.event.issue.number }}
           repository: ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Parse PR Info
+        id: pr
+        run: |
+          echo "::set-output name=headers::${{ fromJson(${{ steps.prraw.outputs.headers }}) }}"
+          echo "::set-output name=data::${{ fromJson(${{ steps.prraw.outputs.data }}) }}"
           
       - name: Push
         run: |
