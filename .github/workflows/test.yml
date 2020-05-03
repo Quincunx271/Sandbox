@@ -3,12 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [ master ]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - run: 'echo Found it!'
-        if: steps.check.outputs.triggered == 'true'
 
 jobs:
   build:
