@@ -1,4 +1,4 @@
-name: CI
+name: Run ClangFormat
 
 on:
   issue_comment:
@@ -19,32 +19,24 @@ jobs:
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: rocket
-        
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      
+
       - name: Checkout PR
         uses: dawidd6/action-checkout-pr@v1
         with:
           pr: ${{ github.event.issue.number }}
-          
-      - name: Get merge-base
-        id: mergebase
-        run: echo "::set-output name=commit::$(git merge-base master HEAD)"
-    
-      - name: Get branch name
-        id: branchname
-        run: echo "::set-output name=branch::$(git branch)"
-        
+
       - name: Get clang-format
         run: sudo apt-get install clang-format-9
-        
+
       - name: Clang format each commit in place
         run: |
           git config --local user.email "$(git log -n 1 --pretty=format:'%ae')"
           git config --local user.name 'GitHub Action'
-          GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i ${{ steps.mergebase.outputs.commit }}
+          GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i $(git merge-base master HEAD)
           set -e
           echo '>>> Beginning Rebasing...'
           while [[ -n $(git status | grep rebase) ]]; do
@@ -56,6 +48,6 @@ jobs:
             git rebase --continue
           done
           echo '>>> Finished Rebasing!'
-    
+
       - name: Push
         run: git push --force -v
