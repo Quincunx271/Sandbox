@@ -62,7 +62,8 @@ jobs:
         with:
           route: GET /repos/:repository/pulls/:${{ github.event.issue.number }}
           repository: ${{ github.repository }}
-          
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Dump info
         run: |
