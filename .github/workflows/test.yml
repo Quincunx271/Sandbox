@@ -65,13 +65,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Dump info
+      - name: Push
         run: |
           echo $HEADERS
           echo $DATA
         env:
           HEADERS: ${{ steps.pr.outputs.headers }}
-          DATA: ${{ steps.pr.outputs.data }}
+          DATA: ${{ steps.pr.outputs.data.head.repo }}
 #         uses: ad-m/github-push-action@v0.5.0
 #         with:
 #           github_token: ${{ secrets.GITHUB_TOKEN }}
