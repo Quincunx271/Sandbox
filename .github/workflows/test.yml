@@ -68,9 +68,9 @@ jobs:
       - name: Extract PR Info
         id: pr
         run: |
-          REPO_NAME=$(echo $DATA | jq '.head.repo.full_name')
+          REPO_NAME=$(echo $DATA | jq -r '.head.repo.full_name')
           echo "::set-output name=repo::$REPO_NAME"
-          BRANCH_NAME=$(echo $DATA | jq '.head.ref')
+          BRANCH_NAME=$(echo $DATA | jq -r '.head.ref')
           echo "::set-output name=branch::$BRANCH_NAME"
         env:
           HEADERS: ${{ steps.prraw.outputs.headers }}
