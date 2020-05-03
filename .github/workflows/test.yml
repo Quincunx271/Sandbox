@@ -27,6 +27,10 @@ jobs:
         id: mergebase
         run: echo "::set-output name=commit::$(git merge-base master HEAD)"
     
+      - name: Get branch name
+        id: branchname
+        run: echo "::set-output name=branch::$(git branch)"
+    
       - name: Test
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -52,5 +56,23 @@ jobs:
           done
           echo '>>> Finished Rebasing!'
         
-      - name: Push
-        run: echo "Push"
+      - name: PR Info
+        id: pr
+        uses: octokit/request-action@v2.0.0
+        with:
+          route: GET /repos/:repository/pulls/:${{ github.event.issue.number }}
+          repository: ${{ github.repository }}
+          
+          
+      - name: Dump info
+        run: |
+          echo $HEADERS
+          echo $DATA
+        env:
+          HEADERS: ${{ steps.pr.outputs.headers }}
+          DATA: ${{ steps.pr.outputs.data }}
+#         uses: ad-m/github-push-action@v0.5.0
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           force: true
+#           branch: ${{ steps.branchname.branch }}
