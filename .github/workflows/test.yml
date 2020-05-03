@@ -12,7 +12,7 @@ jobs:
       - uses: khan/pull-request-comment-trigger@master
         id: trigger
         with:
-          trigger: 'Do: Trigger'
+          trigger: 'Do: ClangFormat'
 #           reaction: rocket
 #         env:
 #           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -62,7 +62,7 @@ jobs:
           shopt -s globstar
           set -e
           while [[ -n $(git status | grep rebase) ]]; do
-            clang-format-9 -style=llvm -i --verbose **/*.hpp **/*.cpp
+            clang-format-9 -style=llvm -i --verbose src/**/*.hpp src/**/*.cpp
             git add -A
             git commit --amend --no-edit
             git rebase --continue
