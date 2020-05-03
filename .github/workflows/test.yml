@@ -43,10 +43,7 @@ jobs:
           set -e
           echo '>>> Beginning Rebasing...'
           while [[ -n $(git status | grep rebase) ]]; do
-            files = $(find . -name '*.hpp' -o -name '*.cpp')
-            if [[ -n $files ]]; then
-              clang-format-9 -style=llvm -i --verbose $files
-            done
+            find . -name '*.hpp' -o -name '*.cpp' | xargs -L1 clang-format-9 -style=llvm -i --verbose
             echo '>>> Rewriting commit...'
             git add -A
             git commit --amend --no-edit
