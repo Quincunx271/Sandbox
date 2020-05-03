@@ -36,12 +36,7 @@ jobs:
       - name: Get branch name
         id: branchname
         run: echo "::set-output name=branch::$(git branch)"
-    
-      - name: Test
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      
+        
       - name: Get clang-format
         run: sudo apt-get install clang-format-9
         
@@ -61,31 +56,6 @@ jobs:
             git rebase --continue
           done
           echo '>>> Finished Rebasing!'
-        
-      - name: Get PR Info
-        id: prraw
-        uses: octokit/request-action@v2.0.0
-        with:
-          route: GET /repos/:repository/pulls/${{ github.event.issue.number }}
-          repository: ${{ github.repository }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Extract PR Info
-        id: pr
-        run: |
-          REPO_NAME=$(echo $DATA | jq -r '.head.repo.full_name')
-          echo "::set-output name=repo::$REPO_NAME"
-          BRANCH_NAME=$(echo $DATA | jq -r '.head.ref')
-          echo "::set-output name=branch::$BRANCH_NAME"
-        env:
-          HEADERS: ${{ steps.prraw.outputs.headers }}
-          DATA: ${{ steps.prraw.outputs.data }}
-          
+    
       - name: Push
-        uses: ad-m/github-push-action@v0.5.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ steps.pr.outputs.repo }}
-          force: true
-          branch: ${{ steps.pr.outputs.branch }}
+        run: git push --force -v
