@@ -5,69 +5,49 @@ on:
     types: [ created ]
 
 jobs:
-  build:
+  reformat:
+    name: ClangFormat
+    if: github.event.issue.pull_request != '' && github.event.comment.body == 'Do: ClangFormat' && github.event.comment.user.id == github.event.issue.user.id
     runs-on: ubuntu-latest
 
     steps:
-      - uses: khan/pull-request-comment-trigger@master
-        id: trigger
-        with:
-          trigger: 'Do: ClangFormat'
-#           reaction: rocket
-#         env:
-#           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-
-      - name: Require PR Owner
-        id: filter
-        shell: python
-        run: |
-          triggered = '${{ steps.trigger.outputs.triggered }}' == 'true'
-          should_run = triggered and ${{ github.event.comment.user.id }} == ${{ github.event.issue.user.id }}
-          output = 'true' if should_run else 'false'
-          print("::set-output name=continue::" + output)
-
-      - name: Inform Skipped
-        if: steps.filter.outputs.continue == 'false'
-        run: echo "Skipping rest of action"
-
       - uses: actions/checkout@v2
-        if: steps.filter.outputs.continue == 'true'
         with:
           fetch-depth: 0
       
       - name: Checkout PR
         uses: dawidd6/action-checkout-pr@v1
-        if: steps.filter.outputs.continue == 'true'
         with:
           pr: ${{ github.event.issue.number }}
           
       - name: Get merge-base
         id: mergebase
-        if: steps.filter.outputs.continue == 'true'
         run: echo "::set-output name=commit::$(git merge-base master HEAD)"
     
       - name: Test
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
-        if: steps.filter.outputs.continue == 'true'
       
       - name: Get clang-format
         run: sudo apt-get install clang-format-9
-        if: steps.filter.outputs.continue == 'true'
         
       - name: Clang format each commit in place
         run: |
+          git config --local user.email "$(git log -n 1 --pretty=format:'%ae')"
+          git config --local user.name 'GitHub Action'
           GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i ${{ steps.mergebase.outputs.commit }}
           set -e
+          echo '>>> Beginning Rebasing...'
           while [[ -n $(git status | grep rebase) ]]; do
             find . -name '*.hpp' -o -name '*.cpp' | xargs clang-format-9 -style=llvm -i --verbose
+            echo '>>> Rewriting commit...'
             git add -A
             git commit --amend --no-edit
+            echo '>>> Continuing Rebasing...'
             git rebase --continue
           done
-        if: steps.filter.outputs.continue == 'true'
+          echo '>>> Finished Rebasing!'
         
       - name: Push
         run: echo "Push"
-        if: steps.filter.outputs.continue == 'true'
