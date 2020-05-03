@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  pull_request:
-    branches: [ master ]
   issue_comment:
     types: [ created ]
 
@@ -25,9 +23,39 @@ jobs:
 
       - uses: actions/checkout@v2
         if: steps.trigger.outputs.triggered == 'true'
-
+        with:
+          fetch-depth: 0
+      
+      - name: Checkout PR
+        uses: dawidd6/action-checkout-pr@v1
+        if: steps.trigger.outputs.triggered == 'true'
+        with:
+          pr: ${{ github.event.issue.number }}
+          
+      - name: Get merge-base
+        id: mergebase
+        if: steps.trigger.outputs.triggered = 'true'
+        run: echo "::set-output name=commit::$(git merge-base master HEAD)"
+    
       - name: Test
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
+        if: steps.trigger.outputs.triggered == 'true'
+      
+      - name: Get clang-format
+        run: sudo apt-get install clang-format-9
+        if: steps.trigger.outputs.triggered == 'true'
+        
+      - name: Clang format each commit in place
+        run: |
+          GIT_EDITOR="sed -iE 's/^pick/edit/g'" git rebase -i ${{ steps.mergebase.commit }}
+          shopt -s globstar
+          set -e
+          while [[ -n $(git status | grep rebase) ]]; do
+            clang-format-9 -style=llvm -i --verbose **/*.hpp **/*.cpp
+            git add -A
+            git commit --amend --no-edit
+            git rebase --continue
+          done
         if: steps.trigger.outputs.triggered == 'true'
