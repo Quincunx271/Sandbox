@@ -3,15 +3,35 @@ name: CI
 on:
   pull_request:
     branches: [ master ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo Found it!'
+        if: steps.check.outputs.triggered == 'true'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: khan/pull-request-comment-trigger@master
+        id: trigger
+        with:
+          trigger: 'Do: Trigger'
+#           reaction: rocket
+#         env:
+#           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
-    - name: Test
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
+      - name: Inform Skipped
+        if: steps.trigger.outputs.triggered == 'false'
+        run: echo "Skipping rest of action"
+
+      - uses: actions/checkout@v2
+        if: steps.trigger.outputs.triggered == 'true'
+
+      - name: Test
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+        if: steps.trigger.outputs.triggered == 'true'
