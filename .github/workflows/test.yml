@@ -43,7 +43,7 @@ jobs:
           
       - name: Get merge-base
         id: mergebase
-        if: steps.filter.outputs.continue = 'true'
+        if: steps.filter.outputs.continue == 'true'
         run: echo "::set-output name=commit::$(git merge-base master HEAD)"
     
       - name: Test
