@@ -21,7 +21,7 @@ jobs:
         id: filter
         shell: python
         run: |
-          triggered = ${{ steps.trigger.outputs.triggered }} == 'true'
+          triggered = '${{ steps.trigger.outputs.triggered }}' == 'true'
           should_run = triggered and ${{ github.event.comment.user.id }} == ${{ github.event.issue.user.id }}
           output = 'true' if should_run else 'false'
           print("::set-output name=continue::" + output)
