@@ -1,0 +1,27 @@
+name: Add A Comment
+
+on:
+  issue_comment:
+    types: [ created ]
+
+jobs:
+  addcomment:
+    name: Comment
+    # If we are a pull_request, we have the trigger comment, and the person
+    # requesting is the one who made the PR, then we run.
+    if: >-
+      github.event.issue.pull_request != ''
+      && github.event.comment.body == 'Do: Comment'
+      && github.event.comment.user.id == github.event.issue.user.id
+    # We must run on a ubuntu, as we use unix-only commands
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Make Comment
+        uses: peter-evans/create-or-update-comment@v1.4.2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            This is a comment with some info.
+            It is multiline.
+            This is testing.
