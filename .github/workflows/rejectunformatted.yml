@@ -25,7 +25,7 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Rerunning '${{ github.action }}': https://github.com/Quincunx271/Sandbox/actions/runs/${{ github.run_id }}
+            Rerunning 'Check Clang Format': https://github.com/Quincunx271/Sandbox/actions/runs/${{ github.run_id }}
 
       - uses: actions/checkout@v2
 
