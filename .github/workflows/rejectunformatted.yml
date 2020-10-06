@@ -18,10 +18,38 @@ jobs:
       && github.event.comment.user.id == github.event.issue.user.id
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Initialize Report
+        if: ${{ github.event_name == 'issue_comment' }}
+        uses: peter-evans/create-or-update-comment@v1.4.1
+        id: report
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            &#x1F7E1; Rerunning 'Check Clang Format'
+            ${{ github }}
+
+      - uses: actions/checkout@v2
 
       # https://github.com/DoozyX/clang-format-lint-action
-    - uses: DoozyX/clang-format-lint-action@v0.5
-      with:
-        source: '.'
-        clangFormatVersion: 9
+      - uses: DoozyX/clang-format-lint-action@v0.5
+        with:
+          source: '.'
+          clangFormatVersion: 9
+
+      - name: Report Success
+        if: ${{ github.event_name == 'issue_comment' && success() }}
+        uses: peter-evans/create-or-update-comment@v1.4.1
+        with:
+          comment-id: ${{ steps.report.outputs.comment-id }}
+          body: |
+            &#x2714; Passed 'Check Clang Format'
+            ${{ github }}
+
+      - name: Report Failure
+        if: ${{ github.event_name == 'issue_comment' && failure() }}
+        uses: peter-evans/create-or-update-comment@v1.4.1
+        with:
+          comment-id: ${{ steps.report.outputs.comment-id }}
+          body: |
+            &#x274C; Failed 'Check Clang Format'
+            ${{ github }}
