@@ -27,7 +27,22 @@ jobs:
           body: |
             Rerunning '${{ github.workflow }}': https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
+      - id: checkoutref
+        run: |
+          if [[ '${{ github.event_name }}' == 'issue_comment' ]]; then
+            echo '::set-output name=ref::pull/${{ github.event.issue.number }}/head'
+            echo '::set-output name=sha::HEAD'
+          else
+            echo '::set-output name=ref::${{ github.ref }}'
+            echo '::set-output name=sha::${{ github.sha }}'
+          fi
+
       - uses: actions/checkout@v2
+
+      - run: |
+          git fetch origin ${{ steps.checkoutref.outputs.ref }}:branch
+          git checkout branch
+          git checkout ${{ steps.checkoutref.outputs.sha }}
 
       # https://github.com/DoozyX/clang-format-lint-action
       - uses: DoozyX/clang-format-lint-action@v0.5
