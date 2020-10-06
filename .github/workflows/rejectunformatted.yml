@@ -1,0 +1,27 @@
+name: Check Clang Format
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  issue_comment:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'issue_comment'
+      || github.event.issue.pull_request != ''
+      && github.event.comment.body == 'Do: Run Checks'
+      && github.event.comment.user.id == github.event.issue.user.id
+
+    steps:
+    - uses: actions/checkout@v2
+
+      # https://github.com/DoozyX/clang-format-lint-action
+    - uses: DoozyX/clang-format-lint-action@v0.5
+      with:
+        source: '.'
+        clangFormatVersion: 9
