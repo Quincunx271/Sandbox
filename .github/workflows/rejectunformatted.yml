@@ -25,9 +25,7 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            ${{ github.event_path }}
-            ${{ github.run_id }}
-            &#x1F7E1; Rerunning 'Check Clang Format'
+            Rerunning 'Check Clang Format': https://github.com/Quincunx271/Sandbox/actions/runs/${{ github.run_id }}
 
       - uses: actions/checkout@v2
 
@@ -43,7 +41,7 @@ jobs:
         with:
           comment-id: ${{ steps.report.outputs.comment-id }}
           body: |
-            &#x2714; Passed 'Check Clang Format'
+            &#x2714; Passed
 
       - name: Report Failure
         if: ${{ github.event_name == 'issue_comment' && failure() }}
@@ -51,4 +49,4 @@ jobs:
         with:
           comment-id: ${{ steps.report.outputs.comment-id }}
           body: |
-            &#x274C; Failed 'Check Clang Format'
+            &#x274C; Failed
