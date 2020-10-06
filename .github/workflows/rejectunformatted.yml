@@ -25,7 +25,7 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Rerunning '${{ github.action_name }}': https://github.com/Quincunx271/Sandbox/actions/runs/${{ github.run_id }}
+            Rerunning '${{ github.action }}': https://github.com/Quincunx271/Sandbox/actions/runs/${{ github.run_id }}
 
       - uses: actions/checkout@v2
 
